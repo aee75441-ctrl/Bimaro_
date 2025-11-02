@@ -998,18 +998,43 @@
     </div>
 
     <script>
+        // =======================================================
+        // *** إعداد قاعدة بيانات وهمية (Local Storage Mock) ***
+        // =======================================================
+        if (typeof window.storage === 'undefined') {
+            window.storage = {
+                // دالة جلب البيانات
+                get: async (key) => {
+                    const value = localStorage.getItem(key);
+                    return value ? { value } : null;
+                },
+                // دالة تخزين البيانات
+                set: async (key, value) => {
+                    localStorage.setItem(key, value);
+                    return true;
+                },
+                // دالة حذف البيانات
+                delete: async (key) => {
+                    localStorage.removeItem(key);
+                    return true;
+                },
+                // دالة قائمة المفاتيح (تحاكي list)
+                list: async (prefix) => {
+                    const keys = Object.keys(localStorage)
+                        .filter(key => key.startsWith(prefix));
+                    return { keys };
+                }
+            };
+        }
+
+        // =======================================================
         // *** قائمة المشرفين/الناشرين المحددة ***
+        // =======================================================
         const ADMIN_EMAILS = [
             'aee75441@gmail.com',
             'asphodel958@gmail.com'
         ];
         
-        // تم ترك هذه القائمة كمرجع، لكن دالة login ستعتمد على window.storage
-        const AUTHORIZED_USERS = { 
-            'admin@bimaro.com': 'admin123',
-            'uploader@bimaro.com': 'upload456'
-        };
-
         let currentUser = null;
         let currentMangaId = null;
         let currentChapterId = null;
@@ -1028,68 +1053,29 @@
             setupEventListeners();
         }
 
+        // =======================================================
+        // *** دوال المصادقة (Authentication) ***
+        // =======================================================
         async function checkLogin() {
             try {
                 const result = await window.storage.get('current_user');
                 if (result) {
                     currentUser = JSON.parse(result.value);
+                    // التأكد من أن بيانات المستخدم (role/canUpload) سليمة
+                    if (currentUser && currentUser.email) {
+                        // إعادة تعيين الصلاحيات عند تسجيل الدخول لضمان التحديث
+                        const isPublisher = ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+                        currentUser.role = isPublisher ? 'publisher' : 'user';
+                        currentUser.canUpload = isPublisher;
+                        await window.storage.set('current_user', JSON.stringify(currentUser));
+                    }
                     updateUIForLoggedInUser();
                 }
             } catch (error) {
-                console.log('No user logged in');
+                console.log('No user logged in or error loading user:', error);
             }
         }
 
-        function updateUIForLoggedInUser() {
-            document.getElementById('guestActions').style.display = 'none';
-            document.getElementById('userInfo').classList.add('active');
-            document.getElementById('userName').textContent = '👤 ' + currentUser.email;
-
-            // إظهار/إخفاء زر رفع المانهوا بناءً على الصلاحية
-            const uploadBtn = document.querySelector('#userInfo .btn-premium');
-            if (currentUser.canUpload) {
-                uploadBtn.style.display = 'block';
-            } else {
-                uploadBtn.style.display = 'none';
-            }
-        }
-
-        function setupEventListeners() {
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                searchManga(e.target.value);
-            });
-
-            document.getElementById('tagInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addTag();
-                }
-            });
-
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await login();
-            });
-
-            // *** إضافة مستمع حدث لنموذج التسجيل الجديد ***
-            document.getElementById('registerForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await registerUser();
-            });
-            // *** نهاية إضافة مستمع حدث ***
-
-            document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await uploadManga();
-            });
-
-            document.getElementById('chapterForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await addChapter();
-            });
-        }
-
-        // دالة تسجيل الدخول المُعدَّلة (تعتمد على window.storage الآن)
         async function login() {
             const email = document.getElementById('loginEmail').value.toLowerCase();
             const password = document.getElementById('loginPassword').value;
@@ -1101,46 +1087,29 @@
             setTimeout(async () => {
                 let userLoggedIn = false;
                 
-                // 1. محاولة جلب المستخدم من التخزين (للمسجلين الجدد والمشرفين)
-                let userFromStorage = null;
                 try {
+                    // جلب المستخدم من التخزين باستخدام المفتاح "user:الايميل"
                     const result = await window.storage.get(`user:${email}`);
                     if (result) {
-                        userFromStorage = JSON.parse(result.value);
+                        const userFromStorage = JSON.parse(result.value);
+                        
+                        // التحقق من كلمة المرور (نص عادي)
+                        if (userFromStorage.password === password) {
+                            currentUser = userFromStorage;
+                            await window.storage.set('current_user', JSON.stringify(currentUser));
+                            
+                            showNotification('تم تسجيل الدخول بنجاح!');
+                            closeLoginPopup();
+                            updateUIForLoggedInUser();
+                            userLoggedIn = true;
+                        }
                     }
                 } catch (e) {
-                    // تجاهل الخطأ
+                    console.error('Error during login:', e);
                 }
 
-                if (userFromStorage && userFromStorage.password === password) {
-                    currentUser = userFromStorage;
-                    await window.storage.set('current_user', JSON.stringify(currentUser));
-                    
-                    showNotification('تم تسجيل الدخول بنجاح!');
-                    closeLoginPopup();
-                    updateUIForLoggedInUser();
-                    userLoggedIn = true;
-                } 
-                // 2. فحص قائمة AUTHORIZED_USERS القديمة كـ Fallback (اختياري)
-                else if (AUTHORIZED_USERS[email] && AUTHORIZED_USERS[email] === password) {
-                    // إذا كان مستخدماً قديماً، قم بإنشاء كائن مستخدم مؤقت له
-                    currentUser = { 
-                        id: 'old_' + email,
-                        email: email, 
-                        password: password,
-                        role: 'publisher',
-                        canUpload: true 
-                    }; 
-                    await window.storage.set('current_user', JSON.stringify(currentUser));
-                    
-                    showNotification('تم تسجيل الدخول بنجاح! (حساب قديم)');
-                    closeLoginPopup();
-                    updateUIForLoggedInUser();
-                    userLoggedIn = true;
-                }
-                
                 if (!userLoggedIn) {
-                    showNotification('البريد أو كلمة المرور غير صحيحة');
+                    showNotification('البريد الإلكتروني أو كلمة المرور غير صحيحة');
                 }
                 
                 btn.disabled = false;
@@ -1148,7 +1117,6 @@
             }, 1000);
         }
         
-        // *** دالة تسجيل حساب جديد (مضافة حديثاً ومنطق الصلاحيات) ***
         async function registerUser() {
             const email = document.getElementById('registerEmail').value.toLowerCase(); 
             const password = document.getElementById('registerPassword').value;
@@ -1164,6 +1132,7 @@
                 return;
             }
 
+            // فحص إذا كان الإيميل مسجل مسبقاً
             if (await window.storage.get(`user:${email}`)) {
                 showNotification('هذا البريد الإلكتروني مسجل مسبقاً');
                 return;
@@ -1172,20 +1141,21 @@
             // تحديد ما إذا كان الإيميل هو إيميل مشرف
             const isPublisher = ADMIN_EMAILS.includes(email);
             
-            // تعيين الدور والصلاحيات بناءً على نتيجة الفحص
+            // تعيين الدور والصلاحيات
             const role = isPublisher ? 'publisher' : 'user'; 
             const canUpload = isPublisher; 
 
             const newUser = {
                 id: 'user_' + Date.now(),
                 email: email,
-                password: password, // يتم تخزينها كنص عادي لعدم وجود دالة تشفير (Hashing)
+                password: password, // يتم تخزينها كنص عادي (لتبسيط العمل في Frontend)
                 role: role, 
                 canUpload: canUpload,
                 date: Date.now()
             };
 
             try {
+                // حفظ المستخدم الجديد
                 await window.storage.set(`user:${email}`, JSON.stringify(newUser));
                 
                 // تسجيل الدخول التلقائي
@@ -1198,9 +1168,9 @@
                 showNotification('تم تسجيل حسابك بنجاح! دورك: ' + (isPublisher ? 'مشرف/ناشر' : 'مستخدم عادي'));
             } catch (error) {
                 showNotification('حدث خطأ أثناء محاولة التسجيل.');
+                console.error('Registration Error:', error);
             }
         }
-        // *** نهاية دالة تسجيل حساب جديد ***
         
         async function logout() {
             await window.storage.delete('current_user');
@@ -1213,6 +1183,25 @@
             showHome();
         }
 
+        function updateUIForLoggedInUser() {
+            document.getElementById('guestActions').style.display = 'none';
+            document.getElementById('userInfo').classList.add('active');
+            document.getElementById('userName').textContent = '👤 ' + currentUser.email;
+
+            // إظهار/إخفاء زر رفع المانهوا بناءً على الصلاحية
+            const uploadBtn = document.querySelector('#userInfo .btn-premium');
+            // تأكد من وجود خاصية canUpload (للحماية من المستخدمين القدامى المخزنين)
+            if (currentUser && currentUser.canUpload) {
+                uploadBtn.style.display = 'block';
+            } else {
+                uploadBtn.style.display = 'none';
+            }
+        }
+        
+        // =======================================================
+        // *** دوال واجهة المستخدم (UI) والـ Popups ***
+        // =======================================================
+
         function showLoginPopup() {
             document.getElementById('loginPopup').classList.add('active');
             document.getElementById('loginEmail').value = '';
@@ -1223,13 +1212,11 @@
             document.getElementById('loginPopup').classList.remove('active');
         }
 
-        // *** دالة إظهار نافذة التسجيل ***
         function showRegisterPopup() {
             document.getElementById('registerPopup').classList.add('active');
             document.getElementById('registerForm').reset();
         }
 
-        // *** دالة إغلاق نافذة التسجيل ***
         function closeRegisterPopup() {
             document.getElementById('registerPopup').classList.remove('active');
         }
@@ -1243,25 +1230,32 @@
             }, 3000);
         }
 
+        // =======================================================
+        // *** دوال إدارة المانجا والفصول ***
+        // =======================================================
         async function loadManga() {
             try {
-                const keys = await window.storage.list('manga:');
-                if (keys && keys.keys) {
+                const keysResult = await window.storage.list('manga:');
+                const keys = keysResult.keys;
+
+                if (keys && keys.length > 0) {
                     allManga = [];
-                    for (const key of keys.keys) {
+                    for (const key of keys) {
                         try {
                             const result = await window.storage.get(key);
                             if (result) {
                                 allManga.push(JSON.parse(result.value));
                             }
                         } catch (e) {
-                            console.log('Error loading manga:', key);
+                            console.log('Error loading manga:', key, e);
                         }
                     }
                     allManga.sort((a, b) => (b.views || 0) - (a.views || 0));
+                } else {
+                    allManga = [];
                 }
             } catch (error) {
-                console.log('No manga found yet');
+                console.log('Error listing manga keys or no manga found yet', error);
                 allManga = [];
             }
         }
@@ -1430,7 +1424,8 @@
             
             let html = '';
             for (let i = 1; i <= 5; i++) {
-                const active = i <= Math.round(userRating || rating) ? 'active' : '';
+                // استخدام تقييم المستخدم إذا كان موجودًا، وإلا استخدام المتوسط
+                const active = i <= Math.round(userRating || rating) ? 'active' : ''; 
                 html += `<span class="star ${active}" onclick="rateManhua('${type}', ${i})">★</span>`;
             }
             container.innerHTML = html;
@@ -1438,7 +1433,8 @@
 
         async function rateManhua(type, value) {
             if (!currentUser) {
-                showNotification('يجب تسجيل الدخول أولاً');
+                showNotification('يجب تسجيل الدخول أولاً للمشاركة في التقييم.');
+                showLoginPopup();
                 return;
             }
 
@@ -1503,6 +1499,7 @@
             currentChapterIndex = chapterIndex;
             const chapter = manga.chapters[chapterIndex];
 
+            // تحديث المشاهدات (في الذاكرة أولاً ثم حفظ في التخزين)
             if (!manga.chapters[chapterIndex].views) {
                 manga.chapters[chapterIndex].views = 0;
             }
@@ -1571,17 +1568,15 @@
 
         function showUploadManga() {
             if (!currentUser) {
-                showNotification('يجب تسجيل الدخول أولاً');
+                showNotification('يجب تسجيل الدخول أولاً.');
                 showLoginPopup();
                 return;
             }
             
-            // *** فحص صلاحية الرفع ***
             if (!currentUser.canUpload) {
                 showNotification('ليس لديك صلاحية لرفع مانهوا. هذه الصلاحية مخصصة للمشرفين.');
                 return;
             }
-            // *** نهاية فحص صلاحية الرفع ***
 
             selectedTags = [];
             document.getElementById('uploadPopup').classList.add('active');
@@ -1655,17 +1650,10 @@
         }
 
         function showAddChapterPopup() {
-            if (!currentUser) {
-                showNotification('يجب تسجيل الدخول أولاً');
-                return;
-            }
-            
-            // *** فحص صلاحية الإضافة ***
-            if (!currentUser.canUpload) {
+            if (!currentUser || !currentUser.canUpload) {
                 showNotification('ليس لديك صلاحية لإضافة فصول. هذه الصلاحية مخصصة للمشرفين.');
                 return;
             }
-            // *** نهاية فحص صلاحية الإضافة ***
 
             document.getElementById('chapterPopup').classList.add('active');
             document.getElementById('chapterForm').reset();
@@ -1714,6 +1702,9 @@
             }
         }
 
+        // =======================================================
+        // *** إطلاق التطبيق ***
+        // =======================================================
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
