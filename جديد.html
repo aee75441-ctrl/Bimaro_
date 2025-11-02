@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بيمارو مانجا - Bimaro Manga</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #1D1A39;
+            --purple-1: #451952;
+            --purple-2: #662549;
+            --pink-accent: #AE445A;
+            --orange-accent: #F39F5A;
+            --light-pink: #E8BCB9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--primary-dark);
+            color: var(--light-pink);
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--purple-1) 100%);
+            padding: 20px 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 30px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 50px;
+            border: 2px solid var(--purple-2);
+            background: var(--purple-1);
+            color: var(--light-pink);
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--orange-accent);
+            box-shadow: 0 0 20px rgba(243, 159, 90, 0.3);
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-header {
+            padding: 10px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background: none;
+            color: var(--light-pink);
+        }
+
+        .btn-login {
+            border-color: var(--purple-2);
+        }
+
+        .btn-login:hover {
+            background: var(--purple-2);
+            transform: translateY(-2px);
+        }
+
+        .btn-premium {
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            color: white;
+            box-shadow: 0 5px 15px rgba(243, 159, 90, 0.3);
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-2px);
+        }
+
+        .user-info {
+            display: none;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info.active {
+            display: flex;
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 50px;
+        }
+
+        .manga-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .manga-card {
+            background: var(--purple-1);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid var(--purple-2);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .manga-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--orange-accent);
+            box-shadow: 0 15px 30px rgba(243, 159, 90, 0.3);
+        }
+
+        .manga-cover {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, var(--purple-2), var(--purple-1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .manga-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .manga-info {
+            padding: 15px;
+        }
+
+        .manga-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--light-pink);
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .manga-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            z-index: 10;
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            color: white;
+        }
+
+        /* صفحة المانهوا */
+        .manga-detail {
+            display: none;
+        }
+
+        .manga-detail.active {
+            display: block;
+        }
+
+        .manga-header {
+            background: var(--purple-1);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 2px solid var(--purple-2);
+        }
+
+        .manga-header-content {
+            display: flex;
+            gap: 30px;
+        }
+
+        .manga-cover-large {
+            width: 300px;
+            height: 400px;
+            background: linear-gradient(135deg, var(--purple-2), var(--purple-1));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6em;
+            flex-shrink: 0;
+        }
+
+        .manga-cover-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .manga-details {
+            flex: 1;
+        }
+
+        .manga-detail-title {
+            font-size: 2.5em;
+            color: var(--orange-accent);
+            margin-bottom: 20px;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            background: var(--purple-2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid var(--pink-accent);
+        }
+
+        .ratings-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .rating-box {
+            background: var(--purple-2);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .rating-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .rating-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--orange-accent);
+        }
+
+        .rating-stars {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .star {
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+        }
+
+        .star.active {
+            color: var(--orange-accent);
+        }
+
+        .star:hover {
+            transform: scale(1.2);
+        }
+
+        .chapters-section {
+            background: var(--purple-1);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid var(--purple-2);
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: var(--orange-accent);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chapter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chapter-item {
+            background: var(--purple-2);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .chapter-item:hover {
+            border-color: var(--orange-accent);
+            transform: translateX(-5px);
+        }
+
+        .chapter-item.viewed {
+            opacity: 0.7;
+            background: var(--primary-dark);
+        }
+
+        .chapter-info h4 {
+            color: var(--light-pink);
+            margin-bottom: 5px;
+        }
+
+        .chapter-meta {
+            display: flex;
+            gap: 15px;
+            color: rgba(232, 188, 185, 0.7);
+            font-size: 0.9em;
+        }
+
+        /* صفحة القراءة */
+        .reader-page {
+            display: none;
+        }
+
+        .reader-page.active {
+            display: block;
+        }
+
+        .reader-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .reader-header {
+            background: var(--purple-1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reader-images {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .reader-images img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .reader-navigation {
+            background: var(--purple-1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            border: none;
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(243, 159, 90, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--purple-2);
+            border: 2px solid var(--pink-accent);
+        }
+
+        .btn-small {
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        /* نافذة منبثقة */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .popup-card {
+            background: linear-gradient(135deg, var(--purple-1), var(--purple-2));
+            border: 2px solid var(--orange-accent);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: transparent;
+            border: none;
+            color: var(--light-pink);
+            font-size: 1.5em;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .popup-close:hover {
+            background: rgba(174, 68, 90, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .popup-title {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            color: var(--orange-accent);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--light-pink);
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 2px solid var(--purple-2);
+            background: var(--primary-dark);
+            color: var(--light-pink);
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--orange-accent);
+            box-shadow: 0 0 15px rgba(243, 159, 90, 0.3);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn-popup {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-popup-primary {
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            color: white;
+            box-shadow: 0 5px 15px rgba(243, 159, 90, 0.3);
+        }
+
+        .btn-popup-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(243, 159, 90, 0.5);
+        }
+
+        .btn-popup-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-popup-secondary {
+            background: transparent;
+            color: var(--light-pink);
+            border: 2px solid var(--purple-2);
+        }
+
+        .btn-popup-secondary:hover {
+            background: var(--purple-2);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .forgot-password a {
+            color: var(--orange-accent);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .forgot-password a:hover {
+            color: var(--pink-accent);
+            text-decoration: underline;
+        }
+
+        .popup-divider {
+            height: 1px;
+            background: var(--purple-2);
+            margin: 25px 0;
+        }
+
+        .signup-link {
+            text-align: center;
+            color: var(--light-pink);
+            font-size: 0.95em;
+        }
+
+        .signup-link a {
+            color: var(--orange-accent);
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .signup-link a:hover {
+            color: var(--pink-accent);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--pink-accent);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .notification.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .tags-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tag-input {
+            background: var(--purple-2);
+            padding: 6px 12px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            color: var(--pink-accent);
+            font-weight: bold;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .page-btn {
+            padding: 10px 15px;
+            border-radius: 10px;
+            background: var(--purple-1);
+            border: 2px solid var(--purple-2);
+            color: var(--light-pink);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover,
+        .page-btn.active {
+            background: var(--orange-accent);
+            border-color: var(--orange-accent);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .manga-header-content {
+                flex-direction: column;
+            }
+
+            .manga-cover-large {
+                width: 100%;
+                height: 300px;
+            }
+
+            .ratings-section {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 15px 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .search-bar {
+                max-width: 100%;
+                margin: 0;
+            }
+
+            .main-content {
+                padding: 0 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo" onclick="showHome()">بيمــارو مانجا</div>
+            <div class="search-bar">
+                <input type="text" placeholder="ابحث عن مانهوا، كاتب، أو وسم..." id="searchInput">
+            </div>
+            <div class="user-actions" id="guestActions">
+                <button class="btn-header btn-login" onclick="showLoginPopup()">تسجيل الدخول</button>
+            </div>
+            <div class="user-info" id="userInfo">
+                <span id="userName"></span>
+                <button class="btn-header btn-premium" onclick="showUploadManga()" id="uploadMangaBtn" style="display: none;">➕ رفع مانهوا</button>
+                <button class="btn-header btn-login" onclick="logout()">تسجيل الخروج</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content" id="homePage">
+        <h2 class="section-title">🔥 المانهوا المتاحة</h2>
+        <div class="manga-grid" id="mangaGrid"></div>
+        <div class="pagination" id="pagination"></div>
+    </main>
+
+    <div class="main-content manga-detail" id="mangaDetailPage">
+        <button class="btn btn-secondary" onclick="showHome()" style="margin-bottom: 20px;">← العودة للرئيسية</button>
+        
+        <div class="manga-header">
+            <div class="manga-header-content">
+                <div class="manga-cover-large" id="detailCover">🎭</div>
+                <div class="manga-details">
+                    <h1 class="manga-detail-title" id="detailTitle">عنوان المانهوا</h1>
+                    <div class="tags-container" id="detailTags"></div>
+                    <p id="detailDescription" style="margin: 20px 0; line-height: 1.6;"></p>
+                    <p><strong>الفريق المترجم:</strong> <span id="detailTeam"></span></p>
+                    <p style="margin-top: 10px;"><strong>عدد المشاهدات:</strong> 👁️ <span id="detailViews">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ratings-section">
+            <div class="rating-box">
+                <div class="rating-icon">🌶️</div>
+                <div>درجة الحرارة</div>
+                <div class="rating-value" id="heatRating">0.0</div>
+                <div class="rating-stars" id="heatStars"></div>
+                <small id="heatCount">(0 تقييم)</small>
+            </div>
+            <div class="rating-box">
+                <div class="rating-icon">🍷</div>
+                <div>درجة الحرام</div>
+                <div class="rating-value" id="haramRating">0.0</div>
+                <div class="rating-stars" id="haramStars"></div>
+                <small id="haramCount">(0 تقييم)</small>
+            </div>
+            <div class="rating-box">
+                <div class="rating-icon">⭐</div>
+                <div>الجودة العامة</div>
+                <div class="rating-value" id="qualityRating">0.0</div>
+                <div class="rating-stars" id="qualityStars"></div>
+                <small id="qualityCount">(0 تقييم)</small>
+            </div>
+        </div>
+
+        <div class="chapters-section">
+            <div class="section-title">
+                <span>📖 الفصول</span>
+                <button class="btn btn-small" onclick="showAddChapterPopup()" id="addChapterBtn" style="display: none;">+ إضافة فصل</button>
+            </div>
+            <div class="chapter-list" id="chapterList"></div>
+        </div>
+    </div>
+
+    <div class="reader-page" id="readerPage">
+        <div class="reader-container">
+            <div class="reader-header">
+                <button class="btn btn-secondary" onclick="backToMangaDetail()">← العودة للمانهوا</button>
+                <h2 id="readerTitle">الفصل 1</h2>
+            </div>
+            <div class="reader-images" id="readerImages">
+                <p style="text-align: center; padding: 40px;">جاري التحميل...</p>
+            </div>
+            <div class="reader-navigation">
+                <button class="btn" onclick="prevChapter()" id="prevBtn">← الفصل السابق</button>
+                <span id="readerInfo">الفصل 1 من 1</span>
+                <button class="btn" onclick="nextChapter()" id="nextBtn">الفصل التالي →</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="loginPopup">
+        <div class="popup-card">
+            <button class="popup-close" onclick="closeLoginPopup()">×</button>
+            <h2 class="popup-title">تسجيل الدخول إلى حسابك</h2>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" placeholder="أدخل بريدك الإلكتروني" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" required>
+                </div>
+                
+                <div class="popup-buttons">
+                    <button type="submit" class="btn-popup btn-popup-primary" id="loginBtn">تسجيل الدخول</button>
+                    <button type="button" class="btn-popup btn-popup-secondary" onclick="closeLoginPopup()">إلغاء</button>
+                </div>
+                
+                <div class="forgot-password">
+                    <a href="#" onclick="showNotification('تواصل مع الإدارة لاستعادة كلمة المرور')">نسيت كلمة المرور؟</a>
+                </div>
+                
+                <div class="popup-divider"></div>
+                
+                <div class="signup-link">
+                    ما عندك حساب؟ <a href="#" onclick="showNotification('تواصل مع الإدارة للحصول على حساب')">سجّل الآن</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="uploadPopup">
+        <div class="popup-card">
+            <button class="popup-close" onclick="closeUploadPopup()">×</button>
+            <h2 class="popup-title">رفع مانهوا جديد</h2>
+            
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label>عنوان المانهوا</label>
+                    <input type="text" id="mangaTitle" required>
+                </div>
+
+                <div class="form-group">
+                    <label>الوصف</label>
+                    <textarea id="mangaDescription" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>الأيقونة (emoji)</label>
+                    <input type="text" id="mangaEmoji" maxlength="2" placeholder="🎭" required>
+                </div>
+
+                <div class="form-group">
+                    <label>الفريق المترجم</label>
+                    <input type="text" id="mangaTeam" required>
+                </div>
+
+                <div class="form-group">
+                    <label>التصنيفات</label>
+                    <div class="tags-input-container" id="tagsContainer"></div>
+                    <input type="text" id="tagInput" placeholder="اكتب تصنيف واضغط Enter">
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">رفع المانهوا</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="chapterPopup">
+        <div class="popup-card">
+            <button class="popup-close" onclick="closeChapterPopup()">×</button>
+            <h2 class="popup-title">إضافة فصل جديد</h2>
+            
+            <form id="chapterForm">
+                <div class="form-group">
+                    <label>رقم الفصل</label>
+                    <input type="number" id="chapterNumber" required min="1">
+                </div>
+
+                <div class="form-group">
+                    <label>عنوان الفصل (اختياري)</label>
+                    <input type="text" id="chapterTitle">
+                </div>
+
+                <div class="form-group">
+                    <label>روابط الصور (رابط واحد في كل سطر)</label>
+                    <textarea id="chapterImages" rows="6" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg" required></textarea>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">إضافة الفصل</button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // =========================================================
+        // 1. إعداد SUPABASE والدوال المساعدة (يجب أن تكون في البداية)
+        // =========================================================
+        const SUPABASE_URL = "https://xhmxtosujajrsmatvels.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhobXh0b3N1amFqcnNtYXR2ZWxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwOTgwMjgsImV4cCI6MjA3NzY3NDAyOH0.uOU8PVAgDsmNauU4EgkL6_-lIjM-nkZwyZfsSn5BQek";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const ADMINS = ["aee75441@gmail.com", "asphodel958@gmail.com"];
+
+        // إضافة المستخدم الجديد
+        async function registerUser(email, password, username) {
+            const { data, error } = await supabase
+                .from('users')
+                .insert([{ email, password, username }]);
+            return { data, error };
+        }
+
+        // تسجيل الدخول
+        async function loginUser(email, password) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', email)
+                .eq('password', password)
+                .single();
+            
+            if (data) {
+                return { data, error: null };
+            }
+            return { data: null, error: error || { message: "بيانات الاعتماد غير صحيحة" } };
+        }
+
+        // رفع مانهوا
+        async function uploadMangaToDB(manga) {
+            await supabase.from('manga').insert([manga]);
+        }
+
+        // رفع فصل
+        async function uploadChapterToDB(chapter) {
+            await supabase.from('chapters').insert([chapter]);
+        }
+
+        // رفع الصور تلقائيًا إلى Cloudinary (تحتاج إلى تنفيذها في المستقبل)
+        async function uploadImage(file) {
+            showNotification('دالة رفع الصور غير مكتملة حاليًا. استخدم الروابط المباشرة.');
+            return 'https://i.imgur.com/placeholder.png'; // رابط وهمي مؤقت
+        }
+
+        // =========================================================
+        // 2. متغيرات التطبيق الرئيسية
+        // =========================================================
+        let currentUser = null;
+        let currentMangaId = null;
+        let currentChapterId = null;
+        let currentChapterIndex = 0;
+        let currentPage = 1;
+        const itemsPerPage = 12;
+        let allManga = [];
+        let selectedTags = [];
+        let viewHistory = {};
+
+        // =========================================================
+        // 3. دوال التطبيق
+        // =========================================================
+
+        async function init() {
+            await checkLogin();
+            await loadManga();
+            await loadViewHistory();
+            renderMangaGrid();
+            setupEventListeners();
+        }
+
+        async function checkLogin() {
+            try {
+                const result = await window.storage.get('current_user');
+                if (result) {
+                    currentUser = JSON.parse(result.value);
+                    updateUIForLoggedInUser();
+                }
+            } catch (error) {
+                console.log('No user logged in');
+            }
+        }
+
+        function updateUIForLoggedInUser() {
+            document.getElementById('guestActions').style.display = 'none';
+            document.getElementById('userInfo').classList.add('active');
+            document.getElementById('userName').textContent = '👤 ' + currentUser.email;
+
+            // تطبيق صلاحيات المشرفين (الخطوة 5)
+            document.getElementById('uploadMangaBtn').style.display = 'none';
+            
+            if (ADMINS.includes(currentUser.email)) {
+                document.getElementById('uploadMangaBtn').style.display = 'flex'; // زر رفع مانهوا (في الهيدر)
+                // زر إضافة فصل في صفحة التفاصيل يتم إظهاره في showMangaDetail
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchManga(e.target.value);
+            });
+
+            document.getElementById('tagInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTag();
+                }
+            });
+
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await login();
+            });
+
+            document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await uploadManga();
+            });
+
+            document.getElementById('chapterForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await addChapter();
+            });
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> جاري التحقق...';
+            
+            const { data: user, error } = await loginUser(email, password);
+
+            if (user) {
+                currentUser = { email: user.email };
+                await window.storage.set('current_user', JSON.stringify(currentUser));
+                
+                showNotification('تم تسجيل الدخول بنجاح!');
+                closeLoginPopup();
+                updateUIForLoggedInUser();
+            } else {
+                showNotification(error ? error.message : 'البريد أو كلمة المرور غير صحيحة');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'تسجيل الدخول';
+        }
+
+        async function logout() {
+            await window.storage.delete('current_user');
+            currentUser = null;
+            document.getElementById('guestActions').style.display = 'flex';
+            document.getElementById('userInfo').classList.remove('active');
+            document.getElementById('uploadMangaBtn').style.display = 'none'; // لإخفائه في حالة تسجيل الخروج
+            showNotification('تم تسجيل الخروج بنجاح');
+            showHome();
+        }
+
+        function showLoginPopup() {
+            document.getElementById('loginPopup').classList.add('active');
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function closeLoginPopup() {
+            document.getElementById('loginPopup').classList.remove('active');
+        }
+
+        function showNotification(message) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.classList.add('active');
+            setTimeout(() => {
+                notif.classList.remove('active');
+            }, 3000);
+        }
+
+        async function loadManga() {
+            try {
+                const keys = await window.storage.list('manga:');
+                if (keys && keys.keys) {
+                    allManga = [];
+                    for (const key of keys.keys) {
+                        try {
+                            const result = await window.storage.get(key);
+                            if (result) {
+                                allManga.push(JSON.parse(result.value));
+                            }
+                        } catch (e) {
+                            console.log('Error loading manga:', key);
+                        }
+                    }
+                    allManga.sort((a, b) => (b.views || 0) - (a.views || 0));
+                }
+            } catch (error) {
+                console.log('No manga found yet');
+                allManga = [];
+            }
+        }
+
+        async function loadViewHistory() {
+            if (!currentUser) return;
+            
+            try {
+                const result = await window.storage.get(`viewhistory:${currentUser.email}`);
+                if (result) {
+                    viewHistory = JSON.parse(result.value);
+                }
+            } catch (error) {
+                viewHistory = {};
+            }
+        }
+
+        async function saveViewHistory() {
+            if (!currentUser) return;
+            
+            try {
+                await window.storage.set(`viewhistory:${currentUser.email}`, JSON.stringify(viewHistory));
+            } catch (error) {
+                console.log('Error saving view history');
+            }
+        }
+
+        function renderMangaGrid() {
+            const grid = document.getElementById('mangaGrid');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageItems = allManga.slice(start, end);
+
+            if (pageItems.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; padding: 40px; grid-column: 1/-1;">لا توجد مانهوا حالياً</p>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            grid.innerHTML = pageItems.map(manga => `
+                <div class="manga-card" onclick="showMangaDetail('${manga.id}')">
+                    ${manga.isNew ? '<div class="badge">✨ جديد</div>' : ''}
+                    <div class="manga-cover">${manga.emoji || '📚'}</div>
+                    <div class="manga-info">
+                        <div class="manga-title">${manga.title}</div>
+                        <div class="manga-stats">
+                            <div style="display: flex; gap: 8px; font-size: 0.85em;">
+                                <span>🌶️ ${(manga.ratings?.heat?.average || 0).toFixed(1)}</span>
+                                <span>⭐ ${(manga.ratings?.quality?.average || 0).toFixed(1)}</span>
+                            </div>
+                            <div>👁️ ${manga.views || 0}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(allManga.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            pagination.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderMangaGrid();
+            window.scrollTo(0, 0);
+        }
+
+        function searchManga(query) {
+            if (!query.trim()) {
+                renderMangaGrid();
+                return;
+            }
+
+            const filtered = allManga.filter(manga => 
+                manga.title.includes(query) || 
+                (manga.tags && manga.tags.some(tag => tag.includes(query)))
+            );
+
+            const grid = document.getElementById('mangaGrid');
+            grid.innerHTML = filtered.map(manga => `
+                <div class="manga-card" onclick="showMangaDetail('${manga.id}')">
+                    ${manga.isNew ? '<div class="badge">✨ جديد</div>' : ''}
+                    <div class="manga-cover">${manga.emoji || '📚'}</div>
+                    <div class="manga-info">
+                        <div class="manga-title">${manga.title}</div>
+                        <div class="manga-stats">
+                            <div style="display: flex; gap: 8px; font-size: 0.85em;">
+                                <span>🌶️ ${(manga.ratings?.heat?.average || 0).toFixed(1)}</span>
+                                <span>⭐ ${(manga.ratings?.quality?.average || 0).toFixed(1)}</span>
+                            </div>
+                            <div>👁️ ${manga.views || 0}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('pagination').innerHTML = '';
+        }
+
+        async function showMangaDetail(mangaId) {
+            currentMangaId = mangaId;
+            const manga = allManga.find(m => m.id === mangaId);
+            if (!manga) return;
+
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('mangaDetailPage').classList.add('active');
+            document.getElementById('readerPage').classList.remove('active');
+
+            document.getElementById('detailTitle').textContent = manga.title;
+            document.getElementById('detailCover').textContent = manga.emoji || '📚';
+            document.getElementById('detailDescription').textContent = manga.description || '';
+            document.getElementById('detailTeam').textContent = manga.team || 'غير محدد';
+            document.getElementById('detailViews').textContent = manga.views || 0;
+
+            const tagsHtml = manga.tags ? manga.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : '';
+            document.getElementById('detailTags').innerHTML = tagsHtml;
+
+            // إظهار زر إضافة فصل فقط للمشرفين
+            document.getElementById('addChapterBtn').style.display = 'none';
+            if (currentUser && ADMINS.includes(currentUser.email)) {
+                document.getElementById('addChapterBtn').style.display = 'block';
+            }
+
+            renderRatings(manga);
+            renderChapters(manga);
+        }
+
+        function renderRatings(manga) {
+            const ratings = manga.ratings || {
+                heat: { average: 0, count: 0, users: {} },
+                haram: { average: 0, count: 0, users: {} },
+                quality: { average: 0, count: 0, users: {} }
+            };
+
+            document.getElementById('heatRating').textContent = ratings.heat.average.toFixed(1);
+            document.getElementById('heatCount').textContent = `(${ratings.heat.count} تقييم)`;
+            renderStars('heatStars', ratings.heat.average, 'heat');
+
+            document.getElementById('haramRating').textContent = ratings.haram.average.toFixed(1);
+            document.getElementById('haramCount').textContent = `(${ratings.haram.count} تقييم)`;
+            renderStars('haramStars', ratings.haram.average, 'haram');
+
+            document.getElementById('qualityRating').textContent = ratings.quality.average.toFixed(1);
+            document.getElementById('qualityCount').textContent = `(${ratings.quality.count} تقييم)`;
+            renderStars('qualityStars', ratings.quality.average, 'quality');
+        }
+
+        function renderStars(containerId, rating, type) {
+            const container = document.getElementById(containerId);
+            const userRating = currentUser && allManga.find(m => m.id === currentMangaId)?.ratings?.[type]?.users?.[currentUser.email] || 0;
+            
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                const active = i <= Math.round(userRating || rating) ? 'active' : '';
+                html += `<span class="star ${active}" onclick="rateManhua('${type}', ${i})">★</span>`;
+            }
+            container.innerHTML = html;
+        }
+
+        async function rateManhua(type, value) {
+            if (!currentUser) {
+                showNotification('يجب تسجيل الدخول أولاً');
+                return;
+            }
+
+            const manga = allManga.find(m => m.id === currentMangaId);
+            if (!manga) return;
+
+            if (!manga.ratings) {
+                manga.ratings = {
+                    heat: { average: 0, count: 0, users: {} },
+                    haram: { average: 0, count: 0, users: {} },
+                    quality: { average: 0, count: 0, users: {} }
+                };
+            }
+
+            const hadRating = manga.ratings[type].users[currentUser.email];
+            manga.ratings[type].users[currentUser.email] = value;
+
+            const allRatings = Object.values(manga.ratings[type].users);
+            manga.ratings[type].average = allRatings.reduce((a, b) => a + b, 0) / allRatings.length;
+            manga.ratings[type].count = allRatings.length;
+
+            try {
+                await window.storage.set(`manga:${manga.id}`, JSON.stringify(manga));
+                allManga = allManga.map(m => m.id === manga.id ? manga : m);
+                renderRatings(manga);
+                showNotification(`تم ${hadRating ? 'تحديث' : 'إضافة'} تقييمك بنجاح!`);
+            } catch (error) {
+                showNotification('حدث خطأ أثناء حفظ التقييم');
+            }
+        }
+
+        function renderChapters(manga) {
+            const list = document.getElementById('chapterList');
+            const chapters = manga.chapters || [];
+
+            if (chapters.length === 0) {
+                list.innerHTML = '<p style="text-align: center; padding: 20px;">لا توجد فصول حالياً</p>';
+                return;
+            }
+
+            list.innerHTML = chapters.map((chapter, index) => {
+                const viewed = viewHistory[manga.id]?.includes(chapter.id);
+                return `
+                    <div class="chapter-item ${viewed ? 'viewed' : ''}" onclick="readChapter('${manga.id}', ${index})">
+                        <div class="chapter-info">
+                            <h4>الفصل ${chapter.number}${chapter.title ? ': ' + chapter.title : ''}</h4>
+                            <div class="chapter-meta">
+                                <span>📅 ${new Date(chapter.date).toLocaleDateString('ar-SA')}</span>
+                                <span>👁️ ${chapter.views || 0} مشاهدة</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function readChapter(mangaId, chapterIndex) {
+            const manga = allManga.find(m => m.id === mangaId);
+            if (!manga || !manga.chapters[chapterIndex]) return;
+
+            currentMangaId = mangaId;
+            currentChapterIndex = chapterIndex;
+            const chapter = manga.chapters[chapterIndex];
+
+            if (!manga.chapters[chapterIndex].views) {
+                manga.chapters[chapterIndex].views = 0;
+            }
+            manga.chapters[chapterIndex].views++;
+            
+            if (!manga.views) manga.views = 0;
+            manga.views++;
+
+            try {
+                await window.storage.set(`manga:${manga.id}`, JSON.stringify(manga));
+                allManga = allManga.map(m => m.id === manga.id ? manga : m);
+            } catch (error) {
+                console.log('Error updating views');
+            }
+
+            if (currentUser) {
+                if (!viewHistory[mangaId]) viewHistory[mangaId] = [];
+                if (!viewHistory[mangaId].includes(chapter.id)) {
+                    viewHistory[mangaId].push(chapter.id);
+                    await saveViewHistory();
+                }
+            }
+
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('mangaDetailPage').classList.remove('active');
+            document.getElementById('readerPage').classList.add('active');
+
+            document.getElementById('readerTitle').textContent = `الفصل ${chapter.number}${chapter.title ? ': ' + chapter.title : ''}`;
+            document.getElementById('readerInfo').textContent = `الفصل ${chapterIndex + 1} من ${manga.chapters.length}`;
+
+            const images = chapter.images || [];
+            document.getElementById('readerImages').innerHTML = images.map(img => 
+                `<img src="${img}" alt="صفحة" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'800\\' height=\\'1200\\'%3E%3Crect fill=\\'%23451952\\' width=\\'800\\' height=\\'1200\\'/%3E%3Ctext x=\\'50%25\\' y=\\'50%25\\' fill=\\'%23E8BCB9\\' font-size=\\'24\\' text-anchor=\\'middle\\'%3Eفشل تحميل الصورة%3C/text%3E%3C/svg%3E'">`
+            ).join('');
+
+            document.getElementById('prevBtn').disabled = chapterIndex === 0;
+            document.getElementById('nextBtn').disabled = chapterIndex === manga.chapters.length - 1;
+
+            window.scrollTo(0, 0);
+        }
+
+        function prevChapter() {
+            if (currentChapterIndex > 0) {
+                readChapter(currentMangaId, currentChapterIndex - 1);
+            }
+        }
+
+        function nextChapter() {
+            const manga = allManga.find(m => m.id === currentMangaId);
+            if (manga && currentChapterIndex < manga.chapters.length - 1) {
+                readChapter(currentMangaId, currentChapterIndex + 1);
+            }
+        }
+
+        function backToMangaDetail() {
+            showMangaDetail(currentMangaId);
+        }
+
+        function showHome() {
+            document.getElementById('homePage').style.display = 'block';
+            document.getElementById('mangaDetailPage').classList.remove('active');
+            document.getElementById('readerPage').classList.remove('active');
+            currentMangaId = null;
+            renderMangaGrid();
+        }
+
+        function showUploadManga() {
+            if (!currentUser || !ADMINS.includes(currentUser.email)) {
+                showNotification('يجب تسجيل الدخول بحساب مشرف أولاً');
+                showLoginPopup();
+                return;
+            }
+
+            selectedTags = [];
+            document.getElementById('uploadPopup').classList.add('active');
+            document.getElementById('uploadForm').reset();
+            document.getElementById('tagsContainer').innerHTML = '';
+        }
+
+        function closeUploadPopup() {
+            document.getElementById('uploadPopup').classList.remove('active');
+        }
+
+        function addTag() {
+            const input = document.getElementById('tagInput');
+            const tag = input.value.trim();
+            
+            if (tag && !selectedTags.includes(tag)) {
+                selectedTags.push(tag);
+                updateTagsDisplay();
+                input.value = '';
+            }
+        }
+
+        function removeTag(tag) {
+            selectedTags = selectedTags.filter(t => t !== tag);
+            updateTagsDisplay();
+        }
+
+        function updateTagsDisplay() {
+            const container = document.getElementById('tagsContainer');
+            container.innerHTML = selectedTags.map(tag => `
+                <div class="tag-input">
+                    <span>${tag}</span>
+                    <span class="tag-remove" onclick="removeTag('${tag}')">×</span>
+                </div>
+            `).join('');
+        }
+
+        async function uploadManga() {
+            const title = document.getElementById('mangaTitle').value;
+            const description = document.getElementById('mangaDescription').value;
+            const emoji = document.getElementById('mangaEmoji').value || '📚';
+            const team = document.getElementById('mangaTeam').value;
+
+            const manga = {
+                id: 'manga_' + Date.now(),
+                title,
+                description,
+                emoji,
+                team,
+                tags: selectedTags,
+                chapters: [],
+                views: 0,
+                ratings: {
+                    heat: { average: 0, count: 0, users: {} },
+                    haram: { average: 0, count: 0, users: {} },
+                    quality: { average: 0, count: 0, users: {} }
+                },
+                isNew: true,
+                createdAt: Date.now()
+            };
+
+            // حفظ المانجا في Supabase
+            await uploadMangaToDB(manga);
+
+            try {
+                // حفظ المانجا في Storage المحلي (للتشغيل الفوري)
+                await window.storage.set(`manga:${manga.id}`, JSON.stringify(manga));
+                allManga.push(manga);
+                closeUploadPopup();
+                showNotification('تم رفع المانهوا بنجاح!');
+                renderMangaGrid();
+            } catch (error) {
+                showNotification('حدث خطأ أثناء رفع المانهوا في التخزين المحلي');
+            }
+        }
+
+        function showAddChapterPopup() {
+            if (!currentUser || !ADMINS.includes(currentUser.email)) {
+                showNotification('يجب تسجيل الدخول بحساب مشرف أولاً');
+                return;
+            }
+
+            document.getElementById('chapterPopup').classList.add('active');
+            document.getElementById('chapterForm').reset();
+        }
+
+        function closeChapterPopup() {
+            document.getElementById('chapterPopup').classList.remove('active');
+        }
+
+        async function addChapter() {
+            const number = parseInt(document.getElementById('chapterNumber').value);
+            const title = document.getElementById('chapterTitle').value;
+            const imagesText = document.getElementById('chapterImages').value;
+            const images = imagesText.split('\n').map(url => url.trim()).filter(url => url);
+
+            if (images.length === 0) {
+                showNotification('يجب إضافة صورة واحدة على الأقل');
+                return;
+            }
+
+            const manga = allManga.find(m => m.id === currentMangaId);
+            if (!manga) return;
+
+            if (!manga.chapters) manga.chapters = [];
+
+            const chapter = {
+                id: 'chapter_' + Date.now(),
+                manga_id: manga.id, // إضافة مفتاح المانجا
+                number,
+                title,
+                images,
+                views: 0,
+                date: Date.now()
+            };
+
+            // حفظ الفصل في Supabase
+            await uploadChapterToDB(chapter);
+
+            manga.chapters.push(chapter);
+            manga.chapters.sort((a, b) => a.number - b.number);
+
+            try {
+                // حفظ المانجا المحدثة في Storage المحلي
+                await window.storage.set(`manga:${manga.id}`, JSON.stringify(manga));
+                allManga = allManga.map(m => m.id === manga.id ? manga : m);
+                closeChapterPopup();
+                showNotification('تم إضافة الفصل بنجاح!');
+                renderChapters(manga);
+            } catch (error) {
+                showNotification('حدث خطأ أثناء إضافة الفصل في التخزين المحلي');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
