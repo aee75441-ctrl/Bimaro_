@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بيمارو مانجا - Bimaro Manga</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #1D1A39;
+            --purple-1: #451952;
+            --purple-2: #662549;
+            --pink-accent: #AE445A;
+            --orange-accent: #F39F5A;
+            --light-pink: #E8BCB9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--primary-dark);
+            color: var(--light-pink);
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--purple-1) 100%);
+            padding: 20px 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 30px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 50px;
+            border: 2px solid var(--purple-2);
+            background: var(--purple-1);
+            color: var(--light-pink);
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--orange-accent);
+            box-shadow: 0 0 20px rgba(243, 159, 90, 0.3);
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-header {
+            padding: 10px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background: none;
+            color: var(--light-pink);
+        }
+
+        .btn-login {
+            border-color: var(--purple-2);
+        }
+
+        .btn-login:hover {
+            background: var(--purple-2);
+            transform: translateY(-2px);
+        }
+
+        .btn-premium {
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            color: white;
+            box-shadow: 0 5px 15px rgba(243, 159, 90, 0.3);
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-2px);
+        }
+
+        .user-info {
+            display: none;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info.active {
+            display: flex;
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 50px;
+        }
+
+        .manga-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .manga-card {
+            background: var(--purple-1);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid var(--purple-2);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .manga-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--orange-accent);
+            box-shadow: 0 15px 30px rgba(243, 159, 90, 0.3);
+        }
+
+        .manga-cover {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, var(--purple-2), var(--purple-1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .manga-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .manga-info {
+            padding: 15px;
+        }
+
+        .manga-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--light-pink);
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .manga-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            z-index: 10;
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            color: white;
+        }
+
+        .manga-detail {
+            display: none;
+        }
+
+        .manga-detail.active {
+            display: block;
+        }
+
+        .manga-header {
+            background: var(--purple-1);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 2px solid var(--purple-2);
+        }
+
+        .manga-header-content {
+            display: flex;
+            gap: 30px;
+        }
+
+        .manga-cover-large {
+            width: 300px;
+            height: 400px;
+            background: linear-gradient(135deg, var(--purple-2), var(--purple-1));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6em;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .manga-cover-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .manga-details {
+            flex: 1;
+        }
+
+        .manga-detail-title {
+            font-size: 2.5em;
+            color: var(--orange-accent);
+            margin-bottom: 20px;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            background: var(--purple-2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid var(--pink-accent);
+        }
+
+        .ratings-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .rating-box {
+            background: var(--purple-2);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .rating-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .rating-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--orange-accent);
+        }
+
+        .rating-stars {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .star {
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+        }
+
+        .star.active {
+            color: var(--orange-accent);
+        }
+
+        .star:hover {
+            transform: scale(1.2);
+        }
+
+        .chapters-section {
+            background: var(--purple-1);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid var(--purple-2);
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: var(--orange-accent);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chapter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chapter-item {
+            background: var(--purple-2);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .chapter-item:hover {
+            border-color: var(--orange-accent);
+            transform: translateX(-5px);
+        }
+
+        .chapter-item.viewed {
+            opacity: 0.7;
+            background: var(--primary-dark);
+        }
+
+        .chapter-info h4 {
+            color: var(--light-pink);
+            margin-bottom: 5px;
+        }
+
+        .chapter-meta {
+            display: flex;
+            gap: 15px;
+            color: rgba(232, 188, 185, 0.7);
+            font-size: 0.9em;
+        }
+
+        .reader-page {
+            display: none;
+        }
+
+        .reader-page.active {
+            display: block;
+        }
+
+        .reader-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .reader-header {
+            background: var(--purple-1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reader-images {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .reader-images img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .reader-navigation {
+            background: var(--purple-1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            border: none;
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(243, 159, 90, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--purple-2);
+            border: 2px solid var(--pink-accent);
+        }
+
+        .btn-small {
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .popup-card {
+            background: linear-gradient(135deg, var(--purple-1), var(--purple-2));
+            border: 2px solid var(--orange-accent);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: transparent;
+            border: none;
+            color: var(--light-pink);
+            font-size: 1.5em;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .popup-close:hover {
+            background: rgba(174, 68, 90, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .popup-title {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            color: var(--orange-accent);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--light-pink);
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 2px solid var(--purple-2);
+            background: var(--primary-dark);
+            color: var(--light-pink);
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--orange-accent);
+            box-shadow: 0 0 15px rgba(243, 159, 90, 0.3);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn-popup {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-popup-primary {
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            color: white;
+            box-shadow: 0 5px 15px rgba(243, 159, 90, 0.3);
+        }
+
+        .btn-popup-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(243, 159, 90, 0.5);
+        }
+
+        .btn-popup-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-popup-secondary {
+            background: transparent;
+            color: var(--light-pink);
+            border: 2px solid var(--purple-2);
+        }
+
+        .btn-popup-secondary:hover {
+            background: var(--purple-2);
+        }
+
+        .popup-divider {
+            height: 1px;
+            background: var(--purple-2);
+            margin: 25px 0;
+        }
+
+        .signup-link {
+            text-align: center;
+            color: var(--light-pink);
+            font-size: 0.95em;
+        }
+
+        .signup-link a {
+            color: var(--orange-accent);
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .signup-link a:hover {
+            color: var(--pink-accent);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--pink-accent);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .notification.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .tags-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tag-input {
+            background: var(--purple-2);
+            padding: 6px 12px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            color: var(--pink-accent);
+            font-weight: bold;
+        }
+
+        .upload-progress {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--primary-dark);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--purple-2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, var(--orange-accent), var(--pink-accent));
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 1.5em;
+            }
+
+            .main-content {
+                padding: 0 15px;
+                margin: 20px auto;
+            }
+
+            .manga-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 12px;
+            }
+
+            .manga-header-content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .ratings-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo" onclick="showHome()">بيمـــارو مانجا</div>
+            <div class="search-bar">
+                <input type="text" placeholder="ابحث عن مانهوا، كاتب، أو وسم..." id="searchInput">
+            </div>
+            <div class="user-actions" id="guestActions">
+                <button class="btn-header btn-login" onclick="showLoginPopup()">تسجيل الدخول</button>
+                <button class="btn-header btn-premium" onclick="showRegisterPopup()">إنشاء حساب</button>
+            </div>
+            <div class="user-info" id="userInfo">
+                <span id="userName"></span>
+                <button class="btn-header btn-premium" onclick="showUploadManga()" id="uploadMangaBtn" style="display: none;">➕ رفع مانهوا</button>
+                <button class="btn-header btn-login" onclick="logout()">تسجيل الخروج</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content" id="homePage">
+        <h2 class="section-title">🔥 المانهوا المتاحة</h2>
+        <div class="manga-grid" id="mangaGrid"></div>
+    </main>
+
+    <div class="main-content manga-detail" id="mangaDetailPage">
+        <button class="btn btn-secondary" onclick="showHome()" style="margin-bottom: 20px;">← العودة للرئيسية</button>
+        
+        <div class="manga-header">
+            <div class="manga-header-content">
+                <div class="manga-cover-large" id="detailCover">🎭</div>
+                <div class="manga-details">
+                    <h1 class="manga-detail-title" id="detailTitle">عنوان المانهوا</h1>
+                    <div class="tags-container" id="detailTags"></div>
+                    <p id="detailDescription" style="margin: 20px 0; line-height: 1.6;"></p>
+                    <p><strong>الفريق المترجم:</strong> <span id="detailTeam"></span></p>
+                    <p style="margin-top: 10px;"><strong>عدد المشاهدات:</strong> 👁️ <span id="detailViews">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ratings-section">
+            <div class="rating-box">
+                <div class="rating-icon">🌶️</div>
+                <div>درجة الحرارة</div>
+                <div class="rating-value" id="heatRating">0.0</div>
+                <div class="rating-stars" id="heatStars"></div>
+                <small id="heatCount">(0 تقييم)</small>
+            </div>
+            <div class="rating-box">
+                <div class="rating-icon">🐷</div>
+                <div>درجة الحرام</div>
+                <div class="rating-value" id="haramRating">0.0</div>
+                <div class="rating-stars" id="haramStars"></div>
+                <small id="haramCount">(0 تقييم)</small>
+            </div>
+            <div class="rating-box">
+                <div class="rating-icon">⭐</div>
+                <div>الجودة العامة</div>
+                <div class="rating-value" id="qualityRating">0.0</div>
+                <div class="rating-stars" id="qualityStars"></div>
+                <small id="qualityCount">(0 تقييم)</small>
+            </div>
+        </div>
+
+        <div class="chapters-section">
+            <div class="section-title">
+                <span>📖 الفصول</span>
+                <button class="btn btn-small" onclick="showAddChapterPopup()" id="addChapterBtn" style="display: none;">+ إضافة فصل</button>
+            </div>
+            <div class="chapter-list" id="chapterList"></div>
+        </div>
+    </div>
+
+    <div class="reader-page" id="readerPage">
+        <div class="reader-container">
+            <div class="reader-header">
+                <button class="btn btn-secondary" onclick="backToMangaDetail()">← العودة للمانهوا</button>
+                <h2 id="readerTitle">الفصل 1</h2>
+            </div>
+            <div class="reader-images" id="readerImages">
+                <p style="text-align: center; padding: 40px;">جاري التحميل...</p>
+            </div>
+            <div class="reader-navigation">
+                <button class="btn" onclick="prevChapter()" id="prevBtn">← الفصل السابق</button>
+                <span id="readerInfo">الفصل 1 من 1</span>
+                <button class="btn" onclick="nextChapter()" id="nextBtn">الفصل التالي →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Popup -->
+    <div class="popup-overlay" id="loginPopup">
+        <div class="popup-card">
+            <button class="popup-close" onclick="closeLoginPopup()">×</button>
+            <h2 class="popup-title">تسجيل الدخول إلى حسابك</h2>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" placeholder="أدخل بريدك الإلكتروني" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" required>
+                </div>
+                
+                <div class="popup-buttons">
+                    <button type="submit" class="btn-popup btn-popup-primary" id="loginBtn">تسجيل الدخول</button>
+                    <button type="button" class="btn-popup btn-popup-secondary" onclick="closeLoginPopup()">إلغاء</button>
+                </div>
+                
+                <div class="popup-divider"></div>
+                
+                <div class="signup-link">
+                    ما عندك حساب؟ <a onclick="switchToRegister()">سجّل الآن</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Popup -->
+    <div class="popup-overlay" id="registerPopup">
+        <div class="popup-card">
+            <button class="popup-close" onclick="closeRegisterPopup()">×</button>
+            <h2 class="popup-title">إنشاء حساب جديد</h2>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="registerEmail" placeholder="أدخل بريدك الإلكتروني" required>
+                </div>
+
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" id="registerUsername" placeholder="اختر اسم مستخدم" required minlength="3">
+                </div>
+                
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="registerPassword" placeholder="أدخل كلمة المرور" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label>تأكيد كلمة المرور</label>
+                    <input type="password" id="registerConfirmPassword" placeholder="أعد إدخال كلمة المرور" required>
+                </div>
+                
+                <div class="popup-buttons">
+                    <button type="submit" class="btn-popup btn-popup-primary" id="registerBtn">إنشاء الحساب</button>
+                    <button type="button" class="btn-popup btn-popup-secondary" onclick="closeRegisterPopup()">إلغاء</button>
+                </div>
+                
+                <div class="popup-divider"></div>
+                
+                <div class="signup-link">
+                    لديك حساب بالفعل؟ <a onclick="switchToLogin()">سجّل الدخول</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Manga Popup -->
+    <div class="popup-overlay" id="uploadPopup">
+        <div class="popup-card">
+            <button class="popup-close" onclick="closeUploadPopup()">×</button>
+            <h2 class="popup-title">رفع مانهوا جديد</h2>
+            
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label>عنوان المانهوا</label>
+                    <input type="text" id="mangaTitle"
